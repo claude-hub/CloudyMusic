@@ -46,6 +46,20 @@ namespace Service
                     "Service.xml")); // 注意：此处替换成所生成的XML documentation的文件名。
                 options.DescribeAllEnumsAsStrings();
             });
+
+            #region 跨域
+            //配置跨域处理
+            services.AddCors(options =>
+            {
+                options.AddPolicy("any", builder =>
+                {
+                    builder.AllowAnyOrigin() //允许任何来源的主机访问
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials();//指定处理cookie
+                });
+            });
+            #endregion
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -1,8 +1,6 @@
 import React, {Component} from 'react';
 import {Button, Checkbox, Icon, Input, Form} from "antd";
 import {Link} from "react-router-dom";
-import {services,config} from '../lib';
-// import './App.css';
 
 const FormItem = Form.Item;
 
@@ -19,27 +17,10 @@ class Login extends Component {
         };
     }
 
-    sing_in = (e) => {
-        e.preventDefault();
-        this.props.form.validateFields((err, values) => {
-            if (!err) {
-                services.sign_in({
-                    username: values.username,
-                    password: values.password
-                }).then(() => {
-                    this.props.history.replace('/');
-                }).catch((err) => {
-                    if(err.response)
-                        config.error(err.response.data.error_description);
-                });
-            }
-        });
-    };
-
     render() {
         const {getFieldDecorator} = this.props.form;
         return (
-            <Form onSubmit={this.sing_in} className="login-form">
+            <Form  className="login-form">
                 <FormItem>
                     {getFieldDecorator('username', {
                         rules: [{required: true, message: 'Please input your username!'}],
