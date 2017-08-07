@@ -1,86 +1,102 @@
 import React, { Component } from 'react';
 import { Layout, Menu, Breadcrumb, Icon } from 'antd';
 import './App.css'
-import axios from "axios";
 
-
-const { SubMenu } = Menu;
-const { Header, Content, Sider } = Layout;
+const { Header, Content, Footer, Sider } = Layout;
+const SubMenu = Menu.SubMenu;
 
 class App extends Component {
-  constructor(props) {
-    super(props);
-    // 设置 initial state
-    this.state = {
-      test: ""
-    };
+  state = {
+    collapsed: false,
+    current: '1',
+    openKeys: [],
+    display:false,
+  };
+  onCollapse = (collapsed) => {
+    console.log(collapsed);
+    this.setState({ collapsed });
   }
-  componentWillMount() {
-    var _this = this;
-    axios
-      .get("http://localhost:7000/api/User/Test")
-      .then(function(response) {
-        _this.setState({test:response.data});
-      })
-      .catch(function(error) {
-        console.log(error);
-      });
+  handleClick = (e) => {
+    console.log('Clicked: ', e);
+    this.setState({ current: e.key });
+  }
+  onOpenChange = (openKeys) => {
+    const state = this.state;
+    const latestOpenKey = openKeys.find(key => !(state.openKeys.indexOf(key) > -1));
+    const latestCloseKey = state.openKeys.find(key => !(openKeys.indexOf(key) > -1));
+
+    let nextOpenKeys = [];
+    if (latestOpenKey) {
+      nextOpenKeys = this.getAncestorKeys(latestOpenKey).concat(latestOpenKey);
+    }
+    if (latestCloseKey) {
+      nextOpenKeys = this.getAncestorKeys(latestCloseKey);
+    }
+    this.setState({ openKeys: nextOpenKeys });
+  }
+  getAncestorKeys = (key) => {
+    const map = {
+      sub3: ['sub2'],
+    };
+    return map[key] || [];
   }
   render() {
     return (
       <Layout>
-        <Header className="header">
-          <div className="logo" />
-          <h2>Welcome to {this.state.test}</h2>
+        <Sider
+          collapsible
+          collapsed={this.state.collapsed}
+          onCollapse={this.onCollapse}
+        >
+          <div className="logo">
+            <div className="logo-mini">云</div>
+            <div className="logo-lg">云Music</div>
+          </div>
           <Menu
             theme="dark"
-            mode="horizontal"
-            defaultSelectedKeys={['2']}
-            style={{ lineHeight: '64px' }}
+            //defaultSelectedKeys={['1']}
+            mode="inline"
+            openKeys={this.state.openKeys}
+            selectedKeys={[this.state.current]}
+            onOpenChange={this.onOpenChange}
+            onClick={this.handleClick}
           >
-            <Menu.Item key="1">nav 1</Menu.Item>
-            <Menu.Item key="2">nav 2</Menu.Item>
-            <Menu.Item key="3">nav 3</Menu.Item>
+            <SubMenu key="sub1" title={<span><Icon type="mail" /><span>Navigation One</span></span>}>
+              <Menu.Item key="1">Option 1</Menu.Item>
+              <Menu.Item key="2">Option 2</Menu.Item>
+              <Menu.Item key="3">Option 3</Menu.Item>
+              <Menu.Item key="4">Option 4</Menu.Item>
+            </SubMenu>
+            <SubMenu key="sub2" title={<span><Icon type="appstore" /><span>Navigation Two</span></span>}>
+              <Menu.Item key="5">Option 5</Menu.Item>
+              <Menu.Item key="6">Option 6</Menu.Item>
+              <SubMenu key="sub3" title="Submenu">
+                <Menu.Item key="7">Option 7</Menu.Item>
+                <Menu.Item key="8">Option 8</Menu.Item>
+              </SubMenu>
+            </SubMenu>
+            <SubMenu key="sub4" title={<span><Icon type="setting" /><span>Navigation Three</span></span>}>
+              <Menu.Item key="9">Option 9</Menu.Item>
+              <Menu.Item key="10">Option 10</Menu.Item>
+              <Menu.Item key="11">Option 11</Menu.Item>
+              <Menu.Item key="12">Option 12</Menu.Item>
+            </SubMenu>
           </Menu>
-        </Header>
+        </Sider>
         <Layout>
-          <Sider width={200} style={{ background: '#fff' }}>
-            <Menu
-              mode="inline"
-              defaultSelectedKeys={['1']}
-              defaultOpenKeys={['sub1']}
-              style={{ height: '100%', borderRight: 0 }}
-            >
-              <SubMenu key="sub1" title={<span><Icon type="user" />subnav 1</span>}>
-                <Menu.Item key="1">option1</Menu.Item>
-                <Menu.Item key="2">option2</Menu.Item>
-                <Menu.Item key="3">option3</Menu.Item>
-                <Menu.Item key="4">option4</Menu.Item>
-              </SubMenu>
-              <SubMenu key="sub2" title={<span><Icon type="laptop" />subnav 2</span>}>
-                <Menu.Item key="5">option5</Menu.Item>
-                <Menu.Item key="6">option6</Menu.Item>
-                <Menu.Item key="7">option7</Menu.Item>
-                <Menu.Item key="8">option8</Menu.Item>
-              </SubMenu>
-              <SubMenu key="sub3" title={<span><Icon type="notification" />subnav 3</span>}>
-                <Menu.Item key="9">option9</Menu.Item>
-                <Menu.Item key="10">option10</Menu.Item>
-                <Menu.Item key="11">option11</Menu.Item>
-                <Menu.Item key="12">option12</Menu.Item>
-              </SubMenu>
-            </Menu>
-          </Sider>
-          <Layout style={{ padding: '0 24px 24px' }}>
+          <Header style={{ background: '#fff', padding: 0 }} />
+          <Content style={{ margin: '0 16px' }}>
             <Breadcrumb style={{ margin: '12px 0' }}>
-              <Breadcrumb.Item>Home</Breadcrumb.Item>
-              <Breadcrumb.Item>List</Breadcrumb.Item>
-              <Breadcrumb.Item>App</Breadcrumb.Item>
+              <Breadcrumb.Item>User</Breadcrumb.Item>
+              <Breadcrumb.Item>Bill</Breadcrumb.Item>
             </Breadcrumb>
-            <Content style={{ background: '#fff', padding: 24, margin: 0, minHeight: 280 }}>
-              Content
-        </Content>
-          </Layout>
+            <div style={{ padding: 24, background: '#fff', minHeight: 360 }}>
+              Bill is a cat.
+            </div>
+          </Content>
+          <Footer style={{ textAlign: 'center' }}>
+            Ant Design ©2016 Created by Ant UED
+          </Footer>
         </Layout>
       </Layout>
     );

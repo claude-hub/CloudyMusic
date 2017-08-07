@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {Button, Checkbox, Icon, Input, Form} from "antd";
-import {Link} from "react-router-dom";
+import axios from "axios";
 
 const FormItem = Form.Item;
 
@@ -13,10 +13,21 @@ class Login extends Component {
         super(props);
         this.state = {
             username: null,
-            password: null
+            password: null,
+            test: "",
         };
     }
-
+    componentWillMount() {
+        var _this = this;
+        axios
+            .get("http://localhost:7000/api/User/Test")
+            .then(function (response) {
+                _this.setState({ test: response.data });
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+    }
     render() {
         const {getFieldDecorator} = this.props.form;
         return (
