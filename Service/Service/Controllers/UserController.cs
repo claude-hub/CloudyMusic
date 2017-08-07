@@ -17,6 +17,8 @@ namespace Service.Controllers
         /// <summary>
         /// µÇÂ¼
         /// </summary>
+        /// <param name="name"></param>
+        /// <param name="password"></param>
         /// <returns></returns>
         [HttpGet]
         public bool Login(string name, string password)

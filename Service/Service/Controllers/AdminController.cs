@@ -14,9 +14,36 @@ namespace Service.Controllers
     [Route("api/[controller]/[action]")]
     public class AdminController : Controller
     {
-        public IActionResult Index()
+        /// <summary>
+        /// 管理员登录
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet]
+        public bool Login(string name, string password)
         {
-            return View();
+            return true;
+        }
+        /// <summary>
+        /// 找回密码
+        /// </summary>
+        /// <param name="email"></param>
+        /// <param name="identifyCode"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public bool FindPassword(string email, string identifyCode)
+        {
+            return true;
+        }
+        /// <summary>
+        /// 添加管理员
+        /// </summary>
+        /// <param name="email"></param>
+        /// <param name="passwod"></param>
+        /// <returns></returns>
+        [HttpGet]
+        public bool AddAdmin(string email, string passwod)
+        {
+            return true;
         }
     }
 }
