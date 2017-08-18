@@ -9,7 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.IO;
 using Microsoft.Extensions.PlatformAbstractions;
-
+using Service.Models;
+using Microsoft.EntityFrameworkCore;
 namespace Service
 {
     public class Startup
@@ -29,9 +30,11 @@ namespace Service
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<CloudyMusicContext>(options => options.UseSqlServer(@"Data Source=.;Initial Catalog=CloudyMusic;Integrated Security=True"));
             // Add framework services.
             services.AddMvc();
 
+            //swagger配置
             services.AddSwaggerGen();
             services.ConfigureSwaggerGen(options =>
             {
@@ -68,6 +71,7 @@ namespace Service
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
+            //swagger
             app.UseSwagger();
             app.UseSwaggerUi();
 
