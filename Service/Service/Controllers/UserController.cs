@@ -2,67 +2,39 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Cors;
-using Service.Models;
+using Microsoft.AspNetCore.Authorization;
+using Service.Service;
+using Service.DTOs;
+using Service.Extension;
 
 namespace Service.Controllers
 {
-    /// <summary>
-    /// ÓÃ»§
-    /// </summary>
-    [EnableCors("any")]
+    [Produces("application/json")]
     [Route("api/[controller]/[action]")]
     public class UserController : Controller
     {
-        /// <summary>
-        /// µÇÂ¼
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="password"></param>
-        /// <returns></returns>
-        [HttpGet]
-        public bool Login(string name, string password)
-        {
-            return true;
-        }
-        /// <summary>
-        /// ×¢²á
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet]
-        public List<User> Register()
-        {
-            List<User> users = new List<User>()
-            {
-                new User(){
-                    Email="q1231",
-                    Password="1",
-                    NickName="z",
-                    PhoneNum="a",
-                    UserId=1,
-                },
-                new User(){
-                    Email="q1231",
-                    Password="1",
-                    NickName="z",
-                    PhoneNum="a",
-                    UserId=1,
-                }
-            };
-            return users;
-        }
-        /// <summary>
-        /// ²âÊÔ
-        /// </summary>
-        /// <returns></returns>
-        [HttpGet]
-        public JsonResult Test()
-        {
-            var result = new { name = "linfei", age = "26", address = "wuhan" };
+        UserService _userService = new UserService();
 
-            //MVCÖÐ·µ»Ø
-            return Json(result);
+        [HttpGet]
+        [Authorize]
+        public UserInfoDTO GetUser()
+        {
+            string token = Request.Headers["Authorization"].ToString();
+            var userEmail = ExtensionMethods.GetEmployeeUserObject(token).Email;
+            var user = _userService.GetUser(userEmail);
+            var userInfo = new UserInfoDTO()
+            {
+                CreateTime = user.CreateTime.ToString(),
+                Email = user.Email,
+                Nickname = user.Nickname,
+            };
+            return userInfo;
+        }
+        public string Get()
+        {
+            return "123";
         }
     }
 }

@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Service.Service;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Service.Authorization;
+using Microsoft.Extensions.Options;
 using System.IO;
 using Microsoft.Extensions.PlatformAbstractions;
-using Service.Models;
-using Microsoft.EntityFrameworkCore;
+
 namespace Service
 {
     public class Startup
@@ -30,25 +30,8 @@ namespace Service
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<CloudyMusicContext>(options => options.UseSqlServer(@"Data Source=.;Initial Catalog=CloudyMusic;Integrated Security=True"));
             // Add framework services.
             services.AddMvc();
-
-            //swagger配置
-            services.AddSwaggerGen();
-            services.ConfigureSwaggerGen(options =>
-            {
-                options.SingleApiVersion(new Swashbuckle.Swagger.Model.Info
-                {
-                    Version = "v1",
-                    Title = "My Web Application",
-                    Description = "RESTful API for My Web Application",
-                    TermsOfService = "None"
-                });
-                options.IncludeXmlComments(Path.Combine(PlatformServices.Default.Application.ApplicationBasePath,
-                    "Service.xml")); // 注意：此处替换成所生成的XML documentation的文件名。
-                options.DescribeAllEnumsAsStrings();
-            });
 
             #region 跨域
             //配置跨域处理
@@ -63,6 +46,10 @@ namespace Service
                 });
             });
             #endregion
+
+            //Jwt
+            services.AddSingleton<UserService>();
+            services.AddCors();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -71,9 +58,52 @@ namespace Service
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
 
-            //swagger
-            app.UseSwagger();
-            app.UseSwaggerUi();
+            //Jwt
+            var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration.GetSection("TokenAuthentication:SecretKey").Value));
+            var issuer = Configuration.GetSection("TokenAuthentication:Issuer").Value;
+            var audience = Configuration.GetSection("TokenAuthentication:Audience").Value;
+            var path = Configuration.GetSection("TokenAuthentication:TokenPath").Value;
+            var tokenProviderOptions = new TokenProviderOptions
+            {
+                Path = path,
+                Audience = audience,
+                Issuer = issuer,
+                SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256)
+            };
+
+            //该中间件生成token
+            app.UseMiddleware<Authorization.Middlewares.AuthMiddleware>(Options.Create(tokenProviderOptions));
+
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                // The signing key must match!
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = signingKey,
+
+                // Validate the JWT Issuer (iss) claim
+                ValidateIssuer = true,
+                ValidIssuer = issuer,
+
+                // Validate the JWT Audience (aud) claim
+                ValidateAudience = true,
+                ValidAudience = audience,
+
+                // Validate the token expiry
+                ValidateLifetime = true,
+
+                // If you want to allow a certain amount of clock drift, set that here:
+                // ClockSkew = TimeSpan.Zero
+            };
+
+            //token校验
+            app.UseJwtBearerAuthentication(new JwtBearerOptions
+            {
+                AutomaticAuthenticate = true,
+                AutomaticChallenge = true,
+                TokenValidationParameters = tokenValidationParameters
+            });
+
+            app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().AllowCredentials());
 
             app.UseMvc();
         }

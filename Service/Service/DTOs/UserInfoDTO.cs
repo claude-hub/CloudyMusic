@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Service.Models
+namespace Service.DTOs
 {
-    public class User
+    public class UserInfoDTO
     {
         public string Email { get; set; }
-        public DateTime? CreateTime { get; set; }
+        public string CreateTime { get; set; }
         public string Nickname { get; set; }
-        public string Password { get; set; }
     }
 }
