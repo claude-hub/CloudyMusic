@@ -32,7 +32,7 @@ let params = {
 const config = {
     development: {
         service: {
-            url: 'localhost:12345'
+            url: 'http://localhost:12345'
         },
         socket: {
             globalCableUrl: 'ws://s.cn-su.net:8001/cable'

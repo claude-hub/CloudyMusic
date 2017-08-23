@@ -9,7 +9,7 @@ namespace Service.Authorization
 {
     public class TokenProviderOptions
     {
-        public string Path { get; set; } = "/api/account/login";
+        public string Path { get; set; } = "/api/get/token";
 
         public string Issuer { get; set; }
 

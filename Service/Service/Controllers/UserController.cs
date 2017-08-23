@@ -8,11 +8,13 @@ using Microsoft.AspNetCore.Authorization;
 using Service.Service;
 using Service.DTOs;
 using Service.Extension;
+using Microsoft.AspNetCore.Cors;
 
 namespace Service.Controllers
 {
     [Produces("application/json")]
     [Route("api/[controller]/[action]")]
+    [EnableCors("any")]
     public class UserController : Controller
     {
         UserService _userService = new UserService();

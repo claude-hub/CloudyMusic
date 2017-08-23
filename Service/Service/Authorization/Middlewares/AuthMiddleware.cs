@@ -34,12 +34,12 @@ namespace Service.Authorization.Middlewares
 
             context.Response.Headers.Add("Access-Control-Allow-Credentials", "true");
             context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
-            if (!context.Request.Method.Equals("POST")
-               || !context.Request.HasFormContentType)
-            {
-                context.Response.StatusCode = 400;
-                return context.Response.WriteAsync("Bad request.");
-            }
+            //if (!context.Request.Method.Equals("POST")
+            //   || !context.Request.HasFormContentType)
+            //{
+            //    context.Response.StatusCode = 400;
+            //    return context.Response.WriteAsync("Bad request.");
+            //}
 
             return GenerateToken(context);
         }
