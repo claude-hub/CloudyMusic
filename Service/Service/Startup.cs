@@ -1,38 +1,79 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Service.Service;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Service.Authorization;
 using Microsoft.Extensions.Options;
-using System.IO;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Swashbuckle.AspNetCore.Swagger;
 using Microsoft.Extensions.PlatformAbstractions;
+using System.IO;
+using Service.Authorization;
 
 namespace Service
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        public Startup(IConfiguration configuration)
         {
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true)
-                .AddEnvironmentVariables();
-            Configuration = builder.Build();
+            Configuration = configuration;
         }
 
-        public IConfigurationRoot Configuration { get; }
+        public IConfiguration Configuration { get; }
+
+
+        /// <summary>
+        /// jwt添加，详情具体见UserController以及本页
+        /// </summary>
+        /// <param name="services"></param>
+        public void ConfigureJwtAuthService(IServiceCollection services)
+        {
+            var audienceConfig = Configuration.GetSection("TokenAuthentication:Audience").Value;
+            var symmetricKeyAsBase64 = Configuration.GetSection("TokenAuthentication:SecretKey").Value;
+            var keyByteArray = Encoding.ASCII.GetBytes(symmetricKeyAsBase64);
+            var signingKey = new SymmetricSecurityKey(keyByteArray);
+
+            var tokenValidationParameters = new TokenValidationParameters
+            {
+                // The signing key must match!  
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = signingKey,
+
+                // Validate the JWT Issuer (iss) claim  
+                ValidateIssuer = true,
+                ValidIssuer = audienceConfig,
+
+                // Validate the JWT Audience (aud) claim  
+                ValidateAudience = true,
+                ValidAudience = audienceConfig,
+
+                // Validate the token expiry  
+                ValidateLifetime = true,
+
+                ClockSkew = TimeSpan.Zero
+            };
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(o =>
+            {
+                o.TokenValidationParameters = tokenValidationParameters;
+            });
+        }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // Add framework services.
-            services.AddMvc();
-
+            ConfigureJwtAuthService(services);
             #region 跨域
             //配置跨域处理
             services.AddCors(options =>
@@ -47,62 +88,47 @@ namespace Service
             });
             #endregion
 
-            //Jwt
-            services.AddSingleton<UserService>();
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new Info
+                {
+                    Version = "v1",
+                    Title = "TwBusManagement接口文档",
+                    Description = "RESTful API for TwBusManagement",
+                    TermsOfService = "None",
+                    Contact = new Contact { Name = "Alvin_Su", Email = "asdasdasd@outlook.com", Url = "" }
+                });
+
+                //Set the comments path for the swagger json and ui.
+                var basePath = PlatformServices.Default.Application.ApplicationBasePath;
+                var xmlPath = Path.Combine(basePath, "service.xml");
+                c.IncludeXmlComments(xmlPath);
+
+                c.OperationFilter<HttpHeaderOperation>(); // 添加httpHeader参数
+            });
+
+            services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
-
-            //Jwt
-            var signingKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(Configuration.GetSection("TokenAuthentication:SecretKey").Value));
-            var issuer = Configuration.GetSection("TokenAuthentication:Issuer").Value;
-            var audience = Configuration.GetSection("TokenAuthentication:Audience").Value;
-            var path = Configuration.GetSection("TokenAuthentication:TokenPath").Value;
-            var tokenProviderOptions = new TokenProviderOptions
+            if (env.IsDevelopment())
             {
-                Path = path,
-                Audience = audience,
-                Issuer = issuer,
-                SigningCredentials = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256)
-            };
+                app.UseDeveloperExceptionPage();
+                app.UseBrowserLink();
+            }
+            //身份认证
+            app.UseAuthentication();
+            app.UseStaticFiles();
 
-            //该中间件生成token
-            app.UseMiddleware<Authorization.Middlewares.AuthMiddleware>(Options.Create(tokenProviderOptions));
-
-            var tokenValidationParameters = new TokenValidationParameters
+            //Swagger
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
             {
-                // The signing key must match!
-                ValidateIssuerSigningKey = true,
-                IssuerSigningKey = signingKey,
-
-                // Validate the JWT Issuer (iss) claim
-                ValidateIssuer = true,
-                ValidIssuer = issuer,
-
-                // Validate the JWT Audience (aud) claim
-                ValidateAudience = true,
-                ValidAudience = audience,
-
-                // Validate the token expiry
-                ValidateLifetime = true,
-
-                // If you want to allow a certain amount of clock drift, set that here:
-                // ClockSkew = TimeSpan.Zero
-            };
-
-            //token校验
-            app.UseJwtBearerAuthentication(new JwtBearerOptions
-            {
-                AutomaticAuthenticate = true,
-                AutomaticChallenge = true,
-                TokenValidationParameters = tokenValidationParameters
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "TwBusManagement API V1");
+                c.ShowRequestHeaders();
             });
-
-            app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader().AllowCredentials());
 
             app.UseMvc();
         }

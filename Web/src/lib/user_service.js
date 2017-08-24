@@ -22,23 +22,22 @@ export default class Service {
     static get sessionService() {
         let service = axios.create({
             baseURL: `${config.service.url}/api`,
+            headers:{'Content-Type':'application/x-www-form-urlencoded'}//降为简单请求解决options预请求
         });
-
         service.defaults.timeout = 12000;
         return service;
     }
     static sign_in(data) {
         return new Promise(function (resolve, reject) {
-            Service.sessionService.post(`/get/token?email=${data.username}&password=${data.password}`, {}).then((ret) => {
-                console.log(ret);
-                Store.dispatch({
-                    type: 'SESSION:UP',
-                    token: ret.data.token,
-                    user: {
-                        id: ret.data.id,
-                        name: ret.data.name
-                    }
-                });
+            Service.sessionService.post(`/user/token?userName=${data.username}&password=${data.password}`, {}).then((ret) => {
+                // Store.dispatch({
+                //     type: 'SESSION:UP',
+                //     token: ret.data.token,
+                //     user: {
+                //         id: ret.data.id,
+                //         name: ret.data.name
+                //     }
+                // });
                 resolve(ret)
             }).catch(reject)
         });
