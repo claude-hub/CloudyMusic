@@ -24,9 +24,7 @@ namespace Service
         {
             Configuration = configuration;
         }
-
         public IConfiguration Configuration { get; }
-
 
         /// <summary>
         /// jwt添加，详情具体见UserController以及本页
@@ -88,26 +86,22 @@ namespace Service
             });
             #endregion
 
+            services.AddMvc();
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new Info
                 {
                     Version = "v1",
-                    Title = "TwBusManagement接口文档",
-                    Description = "RESTful API for TwBusManagement",
-                    TermsOfService = "None",
-                    Contact = new Contact { Name = "Alvin_Su", Email = "asdasdasd@outlook.com", Url = "" }
+                    Title = "CloudyMusic接口文档",
                 });
 
-                //Set the comments path for the swagger json and ui.
                 var basePath = PlatformServices.Default.Application.ApplicationBasePath;
-                var xmlPath = Path.Combine(basePath, "service.xml");
+                var xmlPath = Path.Combine(basePath, "Service.xml");
                 c.IncludeXmlComments(xmlPath);
 
                 c.OperationFilter<HttpHeaderOperation>(); // 添加httpHeader参数
             });
-
-            services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -126,8 +120,7 @@ namespace Service
             app.UseSwagger();
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "TwBusManagement API V1");
-                c.ShowRequestHeaders();
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "CloudyMusic V1");
             });
 
             app.UseMvc();
