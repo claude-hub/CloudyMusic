@@ -43,12 +43,13 @@ namespace Service.Authorization.Middlewares
                );
             var response = new
             {
-                IsSuccess = true,
-                Data = new
+                token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
+                user = new
                 {
-                    token = new JwtSecurityTokenHandler().WriteToken(jwtToken),
-                    expiration = jwtToken.ValidTo
-                }
+                    id = 1,
+                    name = "zhangyunpeng",
+                },
+                expiration = jwtToken.ValidTo,
             };
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsync(JsonConvert.SerializeObject(response, new JsonSerializerSettings

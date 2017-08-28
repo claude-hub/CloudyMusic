@@ -29,15 +29,15 @@ export default class Service {
     }
     static sign_in(data) {
         return new Promise(function (resolve, reject) {
-            Service.sessionService.post(`/user/token?userName=${data.username}&password=${data.password}`, {}).then((ret) => {
-                // Store.dispatch({
-                //     type: 'SESSION:UP',
-                //     token: ret.data.token,
-                //     user: {
-                //         id: ret.data.id,
-                //         name: ret.data.name
-                //     }
-                // });
+            Service.sessionService.post(`/user/login?userName=${data.username}&password=${data.password}`, {}).then((ret) => {
+                Store.dispatch({
+                    type: 'SESSION:UP',
+                    token: ret.data.token,
+                    user: {
+                        id: ret.data.user.id,
+                        name: ret.data.user.name
+                    }
+                });
                 resolve(ret)
             }).catch(reject)
         });

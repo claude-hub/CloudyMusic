@@ -36,6 +36,8 @@ namespace Service.Controllers
         [Authorize]
         public JsonResult Values()
         {
+            string token = Request.Headers["Authorization"].ToString();
+
             return Json(new List<string> { "values1", "values2" });
         }
         public string Test()

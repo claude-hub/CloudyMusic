@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 import { Layout, Menu, Breadcrumb, Icon } from 'antd';
+import {connect} from "react-redux";
+import {} from './lib';
 import './App.css'
 
 const { Header, Content, Footer, Sider } = Layout;
@@ -96,11 +98,43 @@ class App extends Component {
           </Content>
           <Footer style={{ textAlign: 'center' }}>
             Ant Design ©2016 Created by Ant UED
+
+
           </Footer>
         </Layout>
       </Layout>
     );
   }
 }
+
+// App.contextTypes = {
+//   store: React.PropTypes.object
+// };
+
+// // 你的组件需要哪些状态值
+// const mapStateToProps = (state) => {
+//   return {
+//       token: state.Session.Token,
+//       user: state.Session.User,
+//       models: state.Models.Models
+//   }
+// };
+
+// //  方法返回action， 组件内用 this.props.xxx调用
+// const mapDispatchToProps = {
+//   setUser: (param) => {
+//       return {
+//           type: 'USER:SET',
+//           user: param
+//       }
+//   },
+//   singOut: () => {
+//       return {
+//           type: 'SESSION:DOWN',
+//       }
+//   }
+// };
+
+// App = connect(mapStateToProps, mapDispatchToProps)(App);
 
 export default App;

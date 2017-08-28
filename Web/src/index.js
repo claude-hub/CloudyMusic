@@ -4,7 +4,6 @@ import {Route, Router, Switch} from "react-router";
 import {Provider} from "react-redux";
 import App from "./App";
 import Login from './user/Login';
-// import {AuthRoute} from "./components";
 import "./index.css";
 import createBrowserHistory from "history/createBrowserHistory";
 import registerServiceWorker from './registerServiceWorker';
