@@ -34,12 +34,14 @@ namespace Service.Controllers
             await authMiddleware.Token(context, userName, password);
         }
         [Authorize]
+        [HttpGet]
         public JsonResult Values()
         {
             string token = Request.Headers["Authorization"].ToString();
 
             return Json(new List<string> { "values1", "values2" });
         }
+        [HttpGet]
         public string Test()
         {
             return "124";

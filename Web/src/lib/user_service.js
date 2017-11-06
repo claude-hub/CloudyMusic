@@ -22,7 +22,7 @@ export default class Service {
     static get sessionService() {
         let service = axios.create({
             baseURL: `${config.service.url}/api`,
-            headers:{'Content-Type':'application/x-www-form-urlencoded'}//降为简单请求解决options预请求
+            // headers:{'Content-Type':'application/x-www-form-urlencoded'}//降为简单请求解决options预请求
         });
         service.defaults.timeout = 12000;
         return service;
